@@ -1,0 +1,10 @@
+version: "3"
+services:
+  reverse-proxy:
+    build:
+      context: ./reverse-proxy
+    image: reverse-proxy
+  backend-blogs:
+    build:
+      context: ./backend/blogs
+    image: backend-blogs

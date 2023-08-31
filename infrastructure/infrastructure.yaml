@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys the network infrastructure
+Resources:
+  JenkinsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "Jenkins master box Security Group"
+      GroupDescription: "Allow to access jenkins master box"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  JenkinsMasterBox:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - Ref: JenkinsSecurityGroup
+      ImageId: ami-051f7e7f6c2f40dc1
+      KeyName: jenkins-masterbox-keypair
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo yum update –y
+          sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+          sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+          sudo yum upgrade
+          sudo dnf install java-11-amazon-corretto -y
+          sudo yum install jenkins -y
+          sudo systemctl enable jenkins
+          sudo systemctl start jenkins
+          sudo systemctl status jenkins
