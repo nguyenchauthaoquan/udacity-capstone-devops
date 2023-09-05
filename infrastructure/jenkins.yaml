@@ -18,9 +18,15 @@ Resources:
           sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
           sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
           sudo yum upgrade
-          sudo yum install git
+          sudo yum install git -y
+          sudo yum install nodejs -y
+          sudo dnf install docker -y
+          sudo yum install -y kubectl
           sudo dnf install java-11-amazon-corretto -y
           sudo yum install jenkins -y
           sudo systemctl enable jenkins
           sudo systemctl start jenkins
+          sudo systemctl enable docker
+          sudo systemctl start docker
           sudo systemctl status jenkins
+          sudo systemctl status docker
