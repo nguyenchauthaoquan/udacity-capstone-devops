@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys the network infrastructure
+Resources:
+  JenkinsMasterBox:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub JenkinsSecurityGroup
+      SubnetId:
+        Fn::ImportValue: !Sub PublicSubnet1a
+      ImageId: ami-028eb925545f314d6
+      KeyName: jenkins-masterbox-keypair
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo yum update –y
+          sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+          sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+          sudo yum upgrade
+          sudo dnf install java-11-amazon-corretto -y
+          sudo yum install jenkins -y
+          sudo systemctl enable jenkins
+          sudo systemctl start jenkins
+          sudo systemctl status jenkins
