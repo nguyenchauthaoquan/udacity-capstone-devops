@@ -20,6 +20,16 @@ pipeline {
                 }
 	        }
 	    }
+	    stage("Unit Testing") {
+	        steps {
+	             script {
+	                sh '''
+	                    cd frontend
+	                    npm run test
+	                '''
+	             }
+	        }
+	    }
 	    stage('Run Linting') {
 	        steps {
                 // Run linting the api blog project
