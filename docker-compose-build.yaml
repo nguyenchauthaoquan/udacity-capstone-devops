@@ -8,3 +8,7 @@ services:
     build:
       context: ./backend/blogs
     image: backend-blogs
+  frontend:
+    build:
+      context: ./frontend
+    image: frontend

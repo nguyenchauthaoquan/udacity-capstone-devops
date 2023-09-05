@@ -31,7 +31,7 @@ export default class GenericRepository<T> implements IGenenricRepository<T> {
   }
 
   find(options: FindOneOptions<T>): Promise<T> {
-    return Promise.resolve(this.repository.findOneOrFail(options));
+    return Promise.resolve(this.repository.findOne(options));
   }
 
   async getAll(

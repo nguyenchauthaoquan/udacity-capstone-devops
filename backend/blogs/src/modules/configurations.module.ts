@@ -5,7 +5,7 @@ import ConfigurationsService from '../configuration/configurations.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: ['.env', '.env.development'],
       expandVariables: true,
     }),
   ],
