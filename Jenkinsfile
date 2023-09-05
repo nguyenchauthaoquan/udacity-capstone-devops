@@ -37,5 +37,25 @@ pipeline {
                 }
 	        }
 	    }
+	    stage("Dependencies analysis") {
+            script {
+                sh '''
+                    cd backend/blogs
+                    npm install
+                    npm audit fix --audit-level=critical --force
+                    npm audit fix --force
+                    npm audit --audit-level=critical
+                '''
+            }
+            script {
+                sh '''
+                    cd frontend
+                    npm install
+                    npm audit fix --audit-level=critical --force
+                    npm audit fix --force
+                    npm audit --audit-level=critical
+                '''
+            }
+        }
 	}
 }
