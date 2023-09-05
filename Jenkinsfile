@@ -1,47 +1,56 @@
 pipeline {
     agent any
 	stages {
-	    stage('Build backends') {
+	    stage('Build Project') {
 	        steps {
                 // Build the api blog project
                 script {
                     sh '''
-                    cd backend/blogs
-                    npm install
-                    npm run build
+                        cd backend/blogs
+                        npm install
+                        npm run build
+                    '''
+                }
+                script {
+                    sh '''
+                        cd frontend
+                        npm install
+                        npm run build
                     '''
                 }
 	        }
 	    }
-	    stage('Build frontend') {
+	    stage("Unit Testing") {
 	        steps {
-	            script {
-	                sh '''
-	                cd frontend
-	                npm install
-	                npm run build
-	                '''
-	            }
-	        }
+	            // Build the api blog project
+                script {
+                    sh '''
+                        cd backend/blogs
+                        npm run test
+                    '''
+                }
+                script {
+                    sh '''
+                        cd frontend
+                        npm run test
+                    '''
+                }
+        	}
 	    }
-	    stage('Linting backends') {
+	    stage('Run Linting') {
 	        steps {
                 // Run linting the api blog project
                 script {
                     sh '''
-                    cd backend/blogs
-                    npm run lint
+                        cd backend/blogs
+                        npm run lint
                     '''
 	            }
-	        }
-	    }
-	    stage('Linting frontend') {
-	        steps {
 	            script {
 	                sh '''
-	                cd frontend
-	                npm run lint
-	                '''
+	                    cd frontend
+	                    npm run lint
+                	'''
                 }
 	        }
 	    }
