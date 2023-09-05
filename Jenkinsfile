@@ -38,7 +38,7 @@ pipeline {
 	        }
 	    }
 	    stage("Dependencies analysis") {
-            step {
+            steps {
                 script {
                      sh '''
                          cd backend/blogs
