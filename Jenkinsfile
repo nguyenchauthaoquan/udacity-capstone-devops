@@ -26,13 +26,23 @@ pipeline {
 	    }
 	    stage('Linting backends') {
 	        steps {
-                // Build the api blog project
+                // Run linting the api blog project
                 script {
                     sh '''
                     cd backend/blogs
-                    ls
+                    npm run lint
                     '''
 	            }
+	        }
+	    }
+	    stage('Linting frontend') {
+	        steps {
+	            script {
+	                sh '''
+	                cd frontend
+	                npm run lint
+	                '''
+                }
 	        }
 	    }
 	}
