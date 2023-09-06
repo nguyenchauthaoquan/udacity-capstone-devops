@@ -12,6 +12,4 @@ const PostgresDatasource: DataSource = new DataSource({
   migrationsTableName: 'migrations',
 });
 
-console.log(process.env.DB_NAME)
-
 export default PostgresDatasource;
