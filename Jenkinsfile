@@ -31,7 +31,7 @@ pipeline {
 	             }
 	        }
 	    }
-	    stage('Run Linting') {
+	    stage('Run Backend Linting') {
 	        steps {
                 // Run linting the api blog project
                 script {
@@ -39,6 +39,16 @@ pipeline {
                         cd backend/blogs
                         npm run lint
                     '''
+	            }
+	        }
+	    }
+	    stage('Run frontend Linting') {
+	        steps {
+	            script {
+	            sh '''
+                    cd frontend
+                    npm run lint
+	            '''
 	            }
 	        }
 	    }
