@@ -33,6 +33,9 @@ Parameters:
     Description: Private Subnet CIDR for availability zone 1c
     Type: String
     Default: 10.0.5.0/24
+  JenkinsCidr:
+    Description: CIDR IP block for Jenkins masterbox
+    Type: String
 Resources:
   # ------------ VPC -----------------------------------
   # ----------------------------------------------------
@@ -302,7 +305,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      AvailabilityZone: !Select [ 2, !GetAZs '' ]
       CidrBlock: !Ref PublicSubnetCIDR1c
       MapPublicIpOnLaunch: true
       Tags:
@@ -401,17 +404,102 @@ Resources:
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref JenkinsCidr
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref JenkinsCidr
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "Load Balancer Security Group"
+      GroupDescription: "Allow http traffic to the load balancer"
+      VpcId: !Ref "VPC"
+      SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref JenkinsCidr
+        - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+          CidrIp: !Ref JenkinsCidr
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
           CidrIp: 0.0.0.0/0
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+      Subnets:
+        - Ref: PublicSubnet1a
+        - Ref: PublicSubnet1b
+        - Ref: PublicSubnet1c
+      SecurityGroups:
+        - Ref: ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join:
+              - ''
+              - - !Ref EnvironmentName
+                - '-application-load-balancer-'
+                - Ref: "AWS::Region"
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values: [ /login ]
+      ListenerArn:
+        Ref: ALBListener
+      Priority: 1
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /login
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 6
+      HealthyThresholdCount: 3
+      Port: 8080
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPC
 
 Outputs:
   VPC:
@@ -454,3 +542,8 @@ Outputs:
     Value: !Ref JenkinsSecurityGroup
     Export:
       Name: !Sub JenkinsSecurityGroup
+  ALBTargetGroup:
+    Description: The exported target group for references by the other templates
+    Value: !Ref ALBTargetGroup
+    Export:
+      Name: !Sub ALBTargetGroup

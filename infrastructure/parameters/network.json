@@ -12,11 +12,23 @@
     "ParameterValue": "10.0.1.0/24"
   },
   {
-    "ParameterKey": "PrivateSubnetCIDR1a",
+    "ParameterKey": "PublicSubnetCIDR1c",
     "ParameterValue": "10.0.2.0/24"
   },
   {
-    "ParameterKey": "PrivateSubnetCIDR1b",
+    "ParameterKey": "PrivateSubnetCIDR1a",
     "ParameterValue": "10.0.3.0/24"
+  },
+  {
+    "ParameterKey": "PrivateSubnetCIDR1b",
+    "ParameterValue": "10.0.4.0/24"
+  },
+  {
+    "ParameterKey": "PrivateSubnetCIDR1c",
+    "ParameterValue": "10.0.5.0/24"
+  },
+  {
+    "ParameterKey": "JenkinsCidr",
+    "ParameterValue": "42.119.228.52/32"
   }
 ]
