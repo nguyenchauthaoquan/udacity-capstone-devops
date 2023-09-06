@@ -11,7 +11,7 @@ pipeline {
                         npm run build
                     '''
                 }
-                // Run both linting and build for react
+                // Frontend build
                 script {
                     sh '''
                         cd frontend
@@ -40,6 +40,12 @@ pipeline {
                         npm run lint
                     '''
 	            }
+	            script {
+	                sh '''
+	                    cd frontend
+	                    npm run lint
+                	'''
+                }
 	        }
 	    }
 	    stage("Dependencies analysis") {
