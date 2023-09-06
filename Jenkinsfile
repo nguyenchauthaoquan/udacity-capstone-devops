@@ -52,13 +52,6 @@ pipeline {
                          npm audit fix --production --force
                          npm audit --production --audit-level=critical
                      '''
-                     sh '''
-                        cd frontend
-                        npm install
-                        npm audit fix --production --audit-level=critical --force
-                        npm audit fix --production --force
-                        npm audit --production --audit-level=critical
-                     '''
                 }
             }
         }
