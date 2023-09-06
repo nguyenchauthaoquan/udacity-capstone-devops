@@ -53,9 +53,16 @@ pipeline {
                      sh '''
                          cd backend/blogs
                          npm install
-                         npm audit fix --audit-level=critical --force
-                         npm audit fix --force
-                         npm audit --audit-level=critical
+                         npm audit fix --production --audit-level=critical --force
+                         npm audit fix --production --force
+                         npm audit --production --audit-level=critical
+                     '''
+                     sh '''
+                        cd frontend
+                        npm install
+                        npm audit fix --production --audit-level=critical --force
+                        npm audit fix --production --force
+                        npm audit --production --audit-level=critical
                      '''
                 }
             }
