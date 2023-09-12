@@ -23,6 +23,7 @@ pipeline {
 	    }
 	    stage("Unit Testing") {
 	        steps {
+				// Frontend unit test execution,
 	             script {
 	                sh '''
 	                    cd frontend
@@ -60,6 +61,15 @@ pipeline {
                          npm audit --production --audit-level=critical
                      '''
                 }
+				script {
+					sh '''
+						cd frontend
+                        npm install
+                        npm audit fix --production --audit-level=critical --force
+                        npm audit fix --production --force
+                        npm audit --production --audit-level=critical
+					'''
+				}
             }
         }
 	}
