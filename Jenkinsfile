@@ -75,7 +75,7 @@ pipeline {
 		stage("Run Migrations") {
 			steps {
 				script {
-					var caughtException = null
+					Throwable caughtException = null
 
 					catchError(buildResult: 'SUCCESS', stageResult: 'ABORTED') {
 						try {
