@@ -162,7 +162,7 @@ Resources:
           Ref: EKSLaunchTemplate
         Version: !GetAtt EKSLaunchTemplate.LatestVersionNumber
       ScalingConfig:
-        DesiredSize: 4
+        DesiredSize: 3
         MaxSize: 6
         MinSize: 2
       Subnets:
