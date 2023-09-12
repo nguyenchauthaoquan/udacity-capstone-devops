@@ -21,7 +21,7 @@ pipeline {
                 }
 	        }
 	    }
-	    stage("Unit Testing") {
+	    stage("Unit Test") {
 	        steps {
 				// Frontend unit test execution,
 	             script {
@@ -32,7 +32,7 @@ pipeline {
 	             }
 	        }
 	    }
-	    stage('Run Backend Linting') {
+	    stage('Run Linting') {
 	        steps {
                 // Run linting the api blog project
                 script {
@@ -72,6 +72,24 @@ pipeline {
 				}
             }
         }
+		stage("Run Migrations") {
+			steps {
+				script {
+					sh '''
+						cd backend/blogs
+						npm run migrations:run -- -d dist/infrastructure/database/database.source.js
+					'''
+				}
+
+				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+					// Deploy your application here
+					sh '''
+						cd backend/blogs
+						npm run migrations:revert -- -d dist/infrastructure/database/database.source.js
+					'''
+				}
+			}
+		}
 		stage("Push to ECR") {
 			steps {
 				script {
