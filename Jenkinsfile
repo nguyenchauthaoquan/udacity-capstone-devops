@@ -75,10 +75,6 @@ pipeline {
 		stage("Push to ECR") {
 			steps {
 				script {
-					sh '''
-						sudo chmod 777 /var/run/docker.sock
-					'''
-
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
 						docker.withRegistry('https://622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs', 'ecr:eu-west-2:aws-credentials') {
 							app.push("${env.BUILD_NUMBER}")
