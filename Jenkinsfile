@@ -11,7 +11,7 @@ pipeline {
                         npm run build
                     '''
                 }
-                // Frontend build (including running eslint because of latest version)
+                // Frontend build
                 script {
                     sh '''
                         cd frontend
@@ -40,16 +40,13 @@ pipeline {
                         npm run lint
                     '''
 	            }
-	        }
-	    }
-	    stage('Run frontend Linting') {
-	        steps {
+	            // Run linting the api blog project
 	            script {
 	            sh '''
                     cd frontend
                     npm run lint
 	            '''
-	            }
+	             }
 	        }
 	    }
 	    stage("Dependencies analysis") {

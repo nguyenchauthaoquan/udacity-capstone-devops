@@ -1,0 +1,221 @@
+# AWSTemplateFormatVersion: "2010-09-09"
+Description: This template deploys the related containers infrastructure
+Parameters:
+  EKSCLusterName:
+    Type: String
+    Default: "capstone-cluster"
+  EKSNodeGroupName:
+    Type: String
+    Default: "capstone-cluster-node-group"
+  EKSLaunchTemplateAMI:
+    Type: String
+    Default: "ami-028eb925545f314d6"
+  EKSInstanceType:
+    Type: String
+    Default: "m5.2xlarge"
+  EKSKeyPair:
+    Type: String
+    Default: "eks-capstone-keypair"
+  EKSVolumeSize:
+    Type: String
+    Default: "20"
+  EKSVolumeType:
+    Type: String
+    Default: "gp2"
+
+Resources:
+  BackendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      EmptyOnDelete: true
+      RepositoryName: backend-blogs
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:BatchCheckLayerAvailability
+              - ecr:PutImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:DescribeRepositories
+              - ecr:GetRepositoryPolicy
+              - ecr:ListImages
+              - ecr:DeleteRepository
+              - ecr:BatchDeleteImage
+  FrontendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      EmptyOnDelete: true
+      RepositoryName: frontend
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:BatchCheckLayerAvailability
+              - ecr:PutImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:DescribeRepositories
+              - ecr:GetRepositoryPolicy
+              - ecr:ListImages
+              - ecr:DeleteRepository
+              - ecr:BatchDeleteImage
+  ReverseProxyECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      EmptyOnDelete: true
+      RepositoryName: reverse-proxy
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:BatchCheckLayerAvailability
+              - ecr:PutImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:DescribeRepositories
+              - ecr:GetRepositoryPolicy
+              - ecr:ListImages
+              - ecr:DeleteRepository
+              - ecr:BatchDeleteImage
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EKSClusterRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action: sts:AssumeRole
+      #Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonECS_FullAccess
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+
+  EKSNodeGroupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EKSNodeGroupRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action: sts:AssumeRole
+      #Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+
+  CapstoneEKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Version: 1.25
+      Name: capstone-cluster
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ClusterSecurityGroup
+        SubnetIds:
+          - Fn::ImportValue: !Sub PrivateSubnet1a
+          - Fn::ImportValue: !Sub PrivateSubnet1b
+          - Fn::ImportValue: !Sub PrivateSubnet1c
+
+  CapstoneEKSNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref CapstoneEKSCluster
+      NodeRole: !GetAtt EKSNodeGroupRole.Arn
+      NodegroupName: capstone-cluster-node-group
+      LaunchTemplate:
+        Id:
+          Ref: EKSLaunchTemplate
+        Version: !GetAtt EKSLaunchTemplate.LatestVersionNumber
+      ScalingConfig:
+        DesiredSize: 4
+        MaxSize: 6
+        MinSize: 2
+      Subnets:
+        - Fn::ImportValue: !Sub PrivateSubnet1a
+        - Fn::ImportValue: !Sub PrivateSubnet1b
+        - Fn::ImportValue: !Sub PrivateSubnet1c
+
+  EKSLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: !Ref EKSLaunchTemplateAMI
+        InstanceType: !Ref EKSInstanceType
+        KeyName: !Ref EKSKeyPair
+        NetworkInterfaces:
+          - AssociatePublicIpAddress: false
+            DeleteOnTermination: true
+            DeviceIndex: 0
+            Groups:
+              - Fn::ImportValue: !Sub NodeGroupSecurityGroup
+        BlockDeviceMappings:
+          - DeviceName: "/dev/xvda"
+            Ebs:
+              VolumeSize: !Ref EKSVolumeSize
+              DeleteOnTermination: true
+              VolumeType: !Ref EKSVolumeType
+        Monitoring:
+          Enabled: true
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            /usr/bin/ping -c 5 8.8.8.8 
+            set -o xtrace
+            /etc/eks/bootstrap.sh ${CapstoneEKSCluster}
+            /opt/aws/bin/cfn-signal --exit-code $? --stack  ${AWS::StackName} --resource CapstoneEKSNodeGroup --region ${AWS::Region}
+
+      LaunchTemplateName: EKSLaunchTemplate
+
+  EKSAutoScailingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub PrivateSubnet1a
+        - Fn::ImportValue: !Sub PrivateSubnet1b
+        - Fn::ImportValue: !Sub PrivateSubnet1c
+      DesiredCapacity: 4
+      MaxSize: 6
+      MinSize: 2
+      UpdatePolicy:
+        AutoScalingRollingUpdate:
+          MinInstancesInService: 2
+          MaxBatchSize: 6
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: EKSLaunchTemplate
+        Version: !GetAtt EKSLaunchTemplate.LatestVersionNumber

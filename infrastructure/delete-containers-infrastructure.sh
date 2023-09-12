@@ -1,0 +1,1 @@
+aws cloudformation delete-stack --stack-name containers-stack --region eu-west-2

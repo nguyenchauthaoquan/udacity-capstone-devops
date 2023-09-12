@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "AuroraIdentifier",
+    "ParameterValue": "blog-application-aurora"
+  },
+  {
+    "ParameterKey": "AuroraDBName",
+    "ParameterValue": "blog_management"
+  },
+  {
+    "ParameterKey": "AuroraUsername",
+    "ParameterValue": "postgres"
+  },
+  {
+    "ParameterKey": "AuroraPassword",
+    "ParameterValue": "postgres"
+  },
+  {
+    "ParameterKey": "AuroraPort",
+    "ParameterValue": "5432"
+  },
+  {
+    "ParameterKey": "BackupRetention",
+    "ParameterValue": "7"
+  },
+  {
+    "ParameterKey": "AuroraInstanceClass",
+    "ParameterValue": "db.r5.large"
+  }
+]

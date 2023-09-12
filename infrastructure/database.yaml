@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys the database infrastructure
+Parameters:
+  AuroraIdentifier:
+    Type: String
+  AuroraUsername:
+    Type: String
+  AuroraPassword:
+    Type: String
+  BackupRetention:
+    Type: String
+  AuroraInstanceClass:
+    Type: String
+  AuroraPort:
+    Type: String
+  AuroraDBName:
+    Type: String
+Resources:
+  RdsSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "RDS Subnet group"
+      DBSubnetGroupName: "RDSSubnetGroup"
+      SubnetIds:
+        - Fn::ImportValue: !Sub PublicSubnet1a
+        - Fn::ImportValue: !Sub PublicSubnet1b
+        - Fn::ImportValue: !Sub PublicSubnet1c
+        - Fn::ImportValue: !Sub PrivateSubnet1a
+        - Fn::ImportValue: !Sub PrivateSubnet1b
+        - Fn::ImportValue: !Sub PrivateSubnet1c
+
+  AuroraCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      EngineMode: provisioned
+      DatabaseName: !Ref AuroraDBName
+      MasterUsername: !Ref AuroraUsername
+      MasterUserPassword: !Ref AuroraPassword
+      DBClusterIdentifier: !Ref AuroraIdentifier
+      DBSubnetGroupName: !Ref RdsSubnetGroup
+      Port: !Ref AuroraPort
+      AvailabilityZones:
+        Fn::GetAZs: !Ref AWS::Region
+      VpcSecurityGroupIds:
+        - Fn::ImportValue: !Sub RdsSecurityGroup
+      BackupRetentionPeriod: !Ref BackupRetention
+
+  AuroraClusterInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora-postgresql
+      DBInstanceIdentifier:
+        Fn::Join:
+          - ''
+          - - !Ref AuroraIdentifier
+            - '-instance'
+      DBClusterIdentifier: !Ref AuroraCluster
+      DBInstanceClass: !Ref AuroraInstanceClass
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+      PubliclyAccessible: true
