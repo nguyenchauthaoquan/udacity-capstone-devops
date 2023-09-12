@@ -198,24 +198,4 @@ Resources:
             set -o xtrace
             /etc/eks/bootstrap.sh ${CapstoneEKSCluster}
             /opt/aws/bin/cfn-signal --exit-code $? --stack  ${AWS::StackName} --resource CapstoneEKSNodeGroup --region ${AWS::Region}
-
       LaunchTemplateName: EKSLaunchTemplate
-
-  EKSAutoScailingGroup:
-    Type: AWS::AutoScaling::AutoScalingGroup
-    UpdatePolicy:
-      AutoScalingRollingUpdate:
-        MinInstancesInService: 2
-        MaxBatchSize: 6
-    Properties:
-      VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub PrivateSubnet1a
-        - Fn::ImportValue: !Sub PrivateSubnet1b
-        - Fn::ImportValue: !Sub PrivateSubnet1c
-      DesiredCapacity: 4
-      MaxSize: 6
-      MinSize: 2
-      LaunchTemplate:
-        LaunchTemplateId:
-          Ref: EKSLaunchTemplate
-        Version: !GetAtt EKSLaunchTemplate.LatestVersionNumber
