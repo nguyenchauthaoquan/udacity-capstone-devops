@@ -74,10 +74,12 @@ pipeline {
         }
 		stage("Push to ECR") {
 			steps {
-				withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
-					docker.withRegistry('622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs', 'ecr:eu-west-2:aws-credentials') {
-						app.push("${env.BUILD_NUMBER}")
-						app.push("latest")
+				script {
+					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+						docker.withRegistry('622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs', 'ecr:eu-west-2:aws-credentials') {
+							app.push("${env.BUILD_NUMBER}")
+							app.push("latest")
+						}
 					}
 				}
 			}
