@@ -169,33 +169,6 @@ Resources:
         - Fn::ImportValue: !Sub PrivateSubnet1a
         - Fn::ImportValue: !Sub PrivateSubnet1b
         - Fn::ImportValue: !Sub PrivateSubnet1c
-
-  EKSLaunchTemplate:
-    Type: AWS::EC2::LaunchTemplate
-    Properties:
-      LaunchTemplateData:
-        ImageId: !Ref EKSLaunchTemplateAMI
-        InstanceType: !Ref EKSInstanceType
-        KeyName: !Ref EKSKeyPair
-        NetworkInterfaces:
-          - AssociatePublicIpAddress: false
-            DeleteOnTermination: true
-            DeviceIndex: 0
-            Groups:
-              - Fn::ImportValue: !Sub NodeGroupSecurityGroup
-        BlockDeviceMappings:
-          - DeviceName: "/dev/xvda"
-            Ebs:
-              VolumeSize: !Ref EKSVolumeSize
-              DeleteOnTermination: true
-              VolumeType: !Ref EKSVolumeType
-        Monitoring:
-          Enabled: true
-        UserData:
-          Fn::Base64: !Sub |
-            #!/bin/bash
-            /usr/bin/ping -c 5 8.8.8.8 
-            set -o xtrace
-            /etc/eks/bootstrap.sh ${CapstoneEKSCluster}
-            /opt/aws/bin/cfn-signal --exit-code $? --stack  ${AWS::StackName} --resource CapstoneEKSNodeGroup --region ${AWS::Region}
-      LaunchTemplateName: EKSLaunchTemplate
+        - Fn::ImportValue: !Sub PublicSubnet1a
+        - Fn::ImportValue: !Sub PublicSubnet1b
+        - Fn::ImportValue: !Sub PublicSubnet1c
