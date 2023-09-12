@@ -75,18 +75,20 @@ pipeline {
 		stage("Run Migrations") {
 			steps {
 				script {
-					sh '''
-						cd backend/blogs
-						npm run migrations:run -- -d dist/infrastructure/database/database.source.js
-					'''
-				}
+					try {
+						sh '''
+							cd backend/blogs
+							npm install
+							npm run migrations:run -- -d dist/infrastructure/database/database.source.js
+						'''
 
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-					// Deploy your application here
-					sh '''
-						cd backend/blogs
-						npm run migrations:revert -- -d dist/infrastructure/database/database.source.js
-					'''
+					} catch (Throwable e) {
+						sh '''
+							cd backend/blogs
+							npm install
+							npm run migrations:revert -- -d dist/infrastructure/database/database.source.js
+						'''
+					}
 				}
 			}
 		}
