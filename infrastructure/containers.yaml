@@ -203,6 +203,10 @@ Resources:
 
   EKSAutoScailingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 2
+        MaxBatchSize: 6
     Properties:
       VPCZoneIdentifier:
         - Fn::ImportValue: !Sub PrivateSubnet1a
@@ -211,10 +215,6 @@ Resources:
       DesiredCapacity: 4
       MaxSize: 6
       MinSize: 2
-      UpdatePolicy:
-        AutoScalingRollingUpdate:
-          MinInstancesInService: 2
-          MaxBatchSize: 6
       LaunchTemplate:
         LaunchTemplateId:
           Ref: EKSLaunchTemplate
