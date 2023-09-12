@@ -112,6 +112,20 @@ pipeline {
 							docker tag backend-blogs:v1 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v1
 							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v1
 						'''
+						sh '''
+							cd frontend
+							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
+							docker build -t frontend:v1 .
+							docker tag frontend:v1 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v1
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v1
+						'''
+						sh '''
+							cd reverse-proxy
+							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
+							docker build -t reverse-proxy:v1 .
+							docker tag reverse-proxy:v1 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
+						'''
 					}
 				}
 			}
