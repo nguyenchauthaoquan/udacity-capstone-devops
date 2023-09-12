@@ -25,7 +25,7 @@ Parameters:
 
 Resources:
   BackendECRRepository:
-    Type: AWS::ECR::PublicRepository
+    Type: AWS::ECR::Repository
     Properties:
       EmptyOnDelete: true
       RepositoryName: backend-blogs
@@ -34,7 +34,8 @@ Resources:
         Statement:
           - Sid: AllowPushPull
             Effect: Allow
-            Principal: *
+            Principal:
+              AWS: "*"
             Action:
               - ecr:GetDownloadUrlForLayer
               - ecr:BatchGetImage
@@ -49,7 +50,7 @@ Resources:
               - ecr:DeleteRepository
               - ecr:BatchDeleteImage
   FrontendECRRepository:
-    Type: AWS::ECR::PublicRepository
+    Type: AWS::ECR::Repository
     Properties:
       EmptyOnDelete: true
       RepositoryName: frontend
@@ -58,7 +59,8 @@ Resources:
         Statement:
           - Sid: AllowPushPull
             Effect: Allow
-            Principal: *
+            Principal:
+              AWS: "*"
             Action:
               - ecr:GetDownloadUrlForLayer
               - ecr:BatchGetImage
@@ -82,7 +84,8 @@ Resources:
         Statement:
           - Sid: AllowPushPull
             Effect: Allow
-            Principal: *
+            Principal:
+              AWS: "*"
             Action:
               - ecr:GetDownloadUrlForLayer
               - ecr:BatchGetImage
