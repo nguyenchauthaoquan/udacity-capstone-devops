@@ -63,7 +63,8 @@ Resources:
             sudo systemctl start docker
             sudo systemctl status jenkins
             sudo systemctl status docker
-        
+            sudo usermod -a -G docker jenkins
+            sudo systemctl restart jenkins
 
   JenkinsAutoScailingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
