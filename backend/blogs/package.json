@@ -17,7 +17,7 @@
     "migrations:create": "ts-node -r dotenv/config ./node_modules/typeorm/cli.js migration:create",
     "premigrations:generate": "npm run build",
     "migrations:generate": "ts-node -r dotenv/config ./node_modules/typeorm/cli.js migration:generate",
-    "migrations:run": "npm run build && ts-node ./node_modules/typeorm/cli.js migration:run",
+    "migrations:run": "npm run build && ts-node -r dotenv/config ./node_modules/typeorm/cli.js migration:run",
     "premigrations:revert": "npm run build",
     "migrations:revert": "npm run build && ts-node -r dotenv/config ./node_modules/typeorm/cli.js migration:revert",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
