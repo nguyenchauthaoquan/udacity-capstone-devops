@@ -76,7 +76,7 @@ pipeline {
 			steps {
 				script {
 					sh '''
-						chmod 777 /var/run/docker.sock
+						sudo chmod 777 /var/run/docker.sock
 					'''
 
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
