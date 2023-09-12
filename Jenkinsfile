@@ -75,15 +75,14 @@ pipeline {
 		stage("Push to ECR") {
 			steps {
 				script {
-					sh '''
-						cd backend/blogs
-					'''
-					app = docker.build("backend-blogs")
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
-						docker.withRegistry('https://622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs', 'ecr:eu-west-2:aws-credentials') {
-							app.push("${env.BUILD_NUMBER}")
-							app.push("latest")
-						}
+						sh '''
+							cd backend/blogs
+							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
+							docker build -t backend-blogs .
+							docker tag backend-blogs:v1 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v1
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v1
+						'''
 					}
 				}
 			}
