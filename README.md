@@ -54,3 +54,7 @@ Step 3: After all plugins installed successfully, add the global credentials in 
 Step 4: Add the git pipeline in blue ocean UI
 Step 5: Run pipeline on the branch which have Jenkinsfile
 Step 6: run `kubectl get services` and access via the external ip of the pods (publicfrontend for accessing frontend application or publicreverseproxy for backend testing api) to access the application
+
+## Results after deployed to EKS successfully
+The images of specific API testing are in folder backends and frontend are in frontend folder in folder screenshots
+The screenshots folder included the CICD result and kubectl get pods, kubectl get services and kubectl get deployments, the reason I let the CICD run these commands is to ensure it is neat.
