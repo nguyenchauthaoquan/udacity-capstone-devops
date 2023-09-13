@@ -159,20 +159,6 @@ pipeline {
 				}
 			}
 		}
-		stage("Enable cloudwatch metrics for kubernetes") {
-			steps {
-				script {
-					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
-						sh '''
-							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-							kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cwagent/cwagent-serviceaccount.yaml
-							kubectl apply -f deployment/cwagent-configmap.yaml
-							kubectl get pods -n amazon-cloudwatch
-						'''
-					}
-				}
-			}
-		}
 		stage("Orchestrate docker container") {
 			steps {
 				script {
