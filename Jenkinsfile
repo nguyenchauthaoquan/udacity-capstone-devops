@@ -166,8 +166,8 @@ pipeline {
 							kubectl apply -f deployments/blue-deployment/backend-blogs-service.yaml
 							kubectl apply -f deployments/blue-deployment/frontend-service.yaml
 							kubectl apply -f deployments/blue-deployment/reverse-proxy-service.yaml
-							kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend
-							kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy
+							kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend-blue
+							kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy-blue
 						'''
 						sh '''
 							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
@@ -177,8 +177,8 @@ pipeline {
 							kubectl apply -f deployments/green-deployment/backend-blogs-service.yaml
 							kubectl apply -f deployments/green-deployment/frontend-service.yaml
 							kubectl apply -f deployments/green-deployment/reverse-proxy-service.yaml
-							kubectl expose deployment frontend-green --type=LoadBalancer --name=publicfrontend
-							kubectl expose deployment reverse-proxy-green --type=LoadBalancer --name=publicreverseproxy
+							kubectl expose deployment frontend-green --type=LoadBalancer --name=publicfrontend-green
+							kubectl expose deployment reverse-proxy-green --type=LoadBalancer --name=publicreverseproxy-green
 						'''
 					}
 				}
