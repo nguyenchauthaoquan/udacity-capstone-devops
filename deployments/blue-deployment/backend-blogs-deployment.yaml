@@ -8,12 +8,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      service: backend-blogs-blue
+      service: backend-blogs
       version: v1.0.0
   template:
     metadata:
       labels:
-        service: backend-blogs-blue
+        service: backend-blogs
         version: v1.0.0
     spec:
       containers:
