@@ -133,7 +133,7 @@ pipeline {
 							cd backend/blogs
 							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
 							docker build -t backend-blogs:latest .
-							docker tag backend-blogs:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
+							docker tag backend-blogs:latest 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
 							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
 						'''
 						sh '''
