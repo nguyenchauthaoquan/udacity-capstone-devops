@@ -190,6 +190,16 @@ pipeline {
 								kubectl delete all --all
 							'''
 							caughtException = e
+						} finally {
+							sh '''
+								kubectl get services
+							'''
+							sh '''
+								kubectl get deployments
+							'''
+							sh '''
+								kubectl get pods
+							'''
 						}
 						if (caughtException) {
 							error caughtException.message
