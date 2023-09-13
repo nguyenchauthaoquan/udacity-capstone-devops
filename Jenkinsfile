@@ -105,7 +105,6 @@ pipeline {
 			steps {
 				script {
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
-						// Blue deployment
 						sh '''
 							cd backend/blogs
 							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
@@ -126,29 +125,6 @@ pipeline {
 							docker build -t reverse-proxy:v1 .
 							docker tag reverse-proxy:v1 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
 							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
-						'''
-
-						// Green deployment
-						sh '''
-							cd backend/blogs
-							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
-							docker build -t backend-blogs:latest .
-							docker tag backend-blogs:latest 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
-							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
-						'''
-						sh '''
-							cd frontend
-							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
-							docker build -t frontend:latest .
-							docker tag frontend:latest 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:latest
-							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:latest
-						'''
-						sh '''
-							cd reverse-proxy
-							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
-							docker build -t reverse-proxy:latest .
-							docker tag reverse-proxy:latest 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:latest
-							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:latest
 						'''
 					}
 				}
