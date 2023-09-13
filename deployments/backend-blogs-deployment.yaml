@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     service: backend-blogs
-  name: backend-blogs-blue
+  name: backend-blogs
 spec:
   replicas: 1
   selector:

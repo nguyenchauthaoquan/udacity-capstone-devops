@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     service: reverse-proxy
-  name: reverse-proxy-green
+  name: reverse-proxy
 spec:
   ports:
     - name: "3001"
@@ -11,4 +11,4 @@ spec:
       targetPort: 3001
   selector:
     service: reverse-proxy
-    version: v1.0.1
+    version: v1.0.0
