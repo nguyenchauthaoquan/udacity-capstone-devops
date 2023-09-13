@@ -187,17 +187,21 @@ pipeline {
 							}
 						} catch (Throwable e) {
 							sh '''
+								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
 								kubectl delete all --all
 							'''
 							caughtException = e
 						} finally {
 							sh '''
+								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
 								kubectl get services
 							'''
 							sh '''
+								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
 								kubectl get deployments
 							'''
 							sh '''
+								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
 								kubectl get pods
 							'''
 						}
