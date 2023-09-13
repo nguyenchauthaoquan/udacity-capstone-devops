@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "EKSCLusterName",
+    "ParameterValue": "capstone-cluster"
+  },
+  {
+    "ParameterKey": "EKSNodeGroupName",
+    "ParameterValue": "capstone-cluster-node-group"
+  },
+  {
+    "ParameterKey": "EKSLaunchTemplateAMI",
+    "ParameterValue": "ami-0eb260c4d5475b901"
+  },
+  {
+    "ParameterKey": "EKSInstanceType",
+    "ParameterValue": "m5.2xlarge"
+  },
+  {
+    "ParameterKey": "EKSKeyPair",
+    "ParameterValue": "eks-capstone-keypair"
+  },
+  {
+    "ParameterKey": "EKSVolumeSize",
+    "ParameterValue": "30"
+  },
+  {
+    "ParameterKey": "EKSVolumeType",
+    "ParameterValue": "gp2"
+  }
+]

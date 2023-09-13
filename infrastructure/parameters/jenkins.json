@@ -1,0 +1,26 @@
+[
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "Jenkins"
+  },
+  {
+    "ParameterKey": "JenkinsInstanceType",
+    "ParameterValue": "m5.large"
+  },
+  {
+    "ParameterKey": "JenkinsAmiId",
+    "ParameterValue": "ami-028eb925545f314d6"
+  },
+  {
+    "ParameterKey": "JenkinsKeyPair",
+    "ParameterValue": "jenkins-masterbox-keypair"
+  },
+  {
+    "ParameterKey": "JenkinsVolumeType",
+    "ParameterValue": "gp2"
+  },
+  {
+    "ParameterKey": "JenkinsVolumeSize",
+    "ParameterValue": "20"
+  }
+]
