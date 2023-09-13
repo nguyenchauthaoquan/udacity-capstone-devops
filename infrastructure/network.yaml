@@ -33,6 +33,9 @@ Parameters:
     Description: Private Subnet CIDR for availability zone 1c
     Type: String
     Default: 10.0.5.0/24
+  JenkinsCidr:
+    Description: CIDR IP block for Jenkins masterbox
+    Type: String
 Resources:
   # ------------ VPC -----------------------------------
   # ----------------------------------------------------
@@ -40,6 +43,7 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
         - Key: Name
@@ -49,7 +53,6 @@ Resources:
               - - !Ref EnvironmentName
                 - "-vpc-"
                 - Ref: "AWS::Region"
-
   # ------------ VPC Internet gateway ------------------
   # ----------------------------------------------------
   InternetGateway:
@@ -100,7 +103,12 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      #[ 0, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
+
       CidrBlock: !Ref PublicSubnetCIDR1a
       MapPublicIpOnLaunch: true
       Tags:
@@ -110,7 +118,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - "-public-subnet-"
-                - !Select [ 0, !GetAZs '' ]
+                - !Select
+                  - 0
+                  - !GetAZs
+                    Ref: AWS::Region
 
   PublicSubnetRouteTableAssociation1a:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -125,7 +136,10 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: false
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs
+          Ref: AWS::Region
       CidrBlock: !Ref PrivateSubnetCIDR1a
       Tags:
         - Key: Name
@@ -134,7 +148,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - "-private-subnet-"
-                - !Select [ 0, !GetAZs '' ]
+                - !Select
+                  - 0
+                  - !GetAZs
+                    Ref: AWS::Region
   PrivateRouteTable1a:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -146,7 +163,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-private-route-table-'
-                - !Select [ 0, !GetAZs '' ]
+                - !Select
+                  - 0
+                  - !GetAZs
+                    Ref: AWS::Region
   DefaultPrivateRoute1a:
     Type: AWS::EC2::Route
     Properties:
@@ -174,7 +194,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-elastic-ip-'
-                - !Select [ 0, !GetAZs '' ]
+                - !Select
+                  - 0
+                  - !GetAZs
+                    Ref: AWS::Region
 
   # ------------ VPC NAT gateway ------------------
   # -----------------------------------------------
@@ -190,7 +213,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-nat-gateway-'
-                - !Select [ 0, !GetAZs '' ]
+                - !Select
+                  - 0
+                  - !GetAZs
+                    Ref: AWS::Region
 
   # ------------ Availability Zone 1b ------------------
   # ----------------------------------------------------
@@ -199,7 +225,11 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      #[ 1, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs
+          Ref: AWS::Region
       CidrBlock: !Ref PublicSubnetCIDR1b
       MapPublicIpOnLaunch: true
       Tags:
@@ -209,7 +239,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - "-public-subnet-"
-                - !Select [ 1, !GetAZs '' ]
+                - !Select
+                  - 1
+                  - !GetAZs
+                    Ref: AWS::Region
 
   PublicSubnetRouteTableAssociation1b:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -224,7 +257,10 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: false
-      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs
+          Ref: AWS::Region
       CidrBlock: !Ref PrivateSubnetCIDR1b
       Tags:
         - Key: Name
@@ -233,7 +269,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - "-private-subnet-"
-                - !Select [ 1, !GetAZs '' ]
+                - !Select
+                  - 1
+                  - !GetAZs
+                    Ref: AWS::Region
 
   # ------------ Private Route Table -------------------------
   # ----------------------------------------------------------
@@ -248,7 +287,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-private-route-table-'
-                - !Select [ 1, !GetAZs '' ]
+                - !Select
+                  - 1
+                  - !GetAZs
+                    Ref: AWS::Region
   DefaultPrivateRoute1b:
     Type: AWS::EC2::Route
     Properties:
@@ -275,7 +317,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-elastic-ip-'
-                - !Select [ 1, !GetAZs '']
+                - !Select
+                  - 1
+                  - !GetAZs
+                    Ref: AWS::Region
 
   # ------------ VPC NAT gateway -------------------------
   # ------------------------------------------------------
@@ -291,7 +336,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-nat-gateway-'
-                - !Select [ 1, !GetAZs '']
+                - !Select
+                  - 1
+                  - !GetAZs
+                    Ref: AWS::Region
 
   # ------------ Availability Zone 1c ------------------
   # ----------------------------------------------------
@@ -302,7 +350,10 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs
+          Ref: AWS::Region
       CidrBlock: !Ref PublicSubnetCIDR1c
       MapPublicIpOnLaunch: true
       Tags:
@@ -312,7 +363,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - "-public-subnet-"
-                - !Select [ 2, !GetAZs '' ]
+                - !Select
+                  - 2
+                  - !GetAZs
+                    Ref: AWS::Region
 
   PublicSubnetRouteTableAssociation1c:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -327,7 +381,10 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: false
-      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      AvailabilityZone: !Select
+        - 2
+        - !GetAZs
+          Ref: AWS::Region
       CidrBlock: !Ref PrivateSubnetCIDR1c
       Tags:
         - Key: Name
@@ -336,7 +393,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - "-private-subnet-"
-                - !Select [ 2, !GetAZs '' ]
+                - !Select
+                  - 2
+                  - !GetAZs
+                    Ref: AWS::Region
   PrivateRouteTable1c:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -348,7 +408,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-private-route-table-'
-                - !Select [ 2, !GetAZs '' ]
+                - !Select
+                  - 2
+                  - !GetAZs
+                    Ref: AWS::Region
   DefaultPrivateRoute1c:
     Type: AWS::EC2::Route
     Properties:
@@ -376,7 +439,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-elastic-ip-'
-                - !Select [ 2, !GetAZs '' ]
+                - !Select
+                  - 2
+                  - !GetAZs
+                    Ref: AWS::Region
 
   # ------------ VPC NAT gateway ------------------
   # -----------------------------------------------
@@ -392,7 +458,10 @@ Resources:
               - ''
               - - !Ref EnvironmentName
                 - '-nat-gateway-'
-                - !Select [ 2, !GetAZs '' ]
+                - !Select
+                  - 2
+                  - !GetAZs
+                    Ref: AWS::Region
   JenkinsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -401,17 +470,159 @@ Resources:
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref JenkinsCidr
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref JenkinsCidr
+
+  RdsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "RDS Security Group"
+      GroupDescription: "Allow to access RDS"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 1150
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
+  ClusterSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "EKS Cluster security group"
+      GroupDescription: "Allow to access EKS CLuster"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 53
+          ToPort: 53
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+
+  NodeGroupSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "EKS Node Group security group"
+      GroupDescription: "Allow to access EKS node group instances"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "Application Load Balancer Security Group"
+      GroupDescription: "Allow http traffic to the load balancer"
+      VpcId: !Ref "VPC"
+      SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref JenkinsCidr
+        - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
+          CidrIp: !Ref JenkinsCidr
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing
+      Subnets:
+        - Ref: PublicSubnet1a
+        - Ref: PublicSubnet1b
+        - Ref: PublicSubnet1c
+      SecurityGroups:
+        - Ref: ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Join:
+              - ''
+              - - !Ref EnvironmentName
+                - '-application-load-balancer-'
+                - Ref: "AWS::Region"
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values: [ /login ]
+      ListenerArn:
+        Ref: ALBListener
+      Priority: 1
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /login
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 6
+      HealthyThresholdCount: 3
+      Port: 8080
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPC
 
 Outputs:
   VPC:
@@ -454,3 +665,23 @@ Outputs:
     Value: !Ref JenkinsSecurityGroup
     Export:
       Name: !Sub JenkinsSecurityGroup
+  ALBTargetGroup:
+    Description: The exported target group for references by the other templates
+    Value: !Ref ALBTargetGroup
+    Export:
+      Name: !Sub ALBTargetGroup
+  RdsSecurityGroup:
+    Description: The exported rds security group for references by the other templates
+    Value: !Ref RdsSecurityGroup
+    Export:
+      Name: !Sub RdsSecurityGroup
+  ClusterSecurityGroup:
+    Description: The exported EKS cluster security group for references by the other templates
+    Value: !Ref ClusterSecurityGroup
+    Export:
+      Name: !Sub ClusterSecurityGroup
+  NodeGroupSecurityGroup:
+    Description: The exported EKS cluster node group security group for references by the other templates
+    Value: !Ref NodeGroupSecurityGroup
+    Export:
+      Name: !Sub NodeGroupSecurityGroup

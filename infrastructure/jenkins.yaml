@@ -1,25 +1,139 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: This template deploys the network infrastructure
+Description: This template deploys the high availability jenkins masterbox
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: Jenkins
+  JenkinsInstanceType:
+    Type: String
+  JenkinsAmiId:
+    Type: AWS::EC2::Image::Id
+  JenkinsKeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+  JenkinsVolumeType:
+    Type: String
+  JenkinsVolumeSize:
+    Type: String
 Resources:
-  JenkinsMasterBox:
-    Type: AWS::EC2::Instance
+  JenkinsLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
     Properties:
-      InstanceType: t2.micro
-      SecurityGroupIds:
-        - Fn::ImportValue: !Sub JenkinsSecurityGroup
-      SubnetId:
-        Fn::ImportValue: !Sub PublicSubnet1a
-      ImageId: ami-028eb925545f314d6
-      KeyName: jenkins-masterbox-keypair
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          sudo yum update –y
-          sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-          sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-          sudo yum upgrade
-          sudo dnf install java-11-amazon-corretto -y
-          sudo yum install jenkins -y
-          sudo systemctl enable jenkins
-          sudo systemctl start jenkins
-          sudo systemctl status jenkins
+      LaunchTemplateName:
+        Fn::Join:
+          - ''
+          - - !Ref EnvironmentName
+            - "-jenkins-masterbox-launch-template-"
+            - Ref: "AWS::Region"
+      LaunchTemplateData:
+        ImageId: !Ref JenkinsAmiId
+        InstanceType: !Ref JenkinsInstanceType
+        KeyName: !Ref JenkinsKeyPair
+        Monitoring:
+          Enabled: true
+        BlockDeviceMappings:
+          - DeviceName: "/dev/sdk"
+            Ebs:
+              VolumeSize: !Ref JenkinsVolumeSize
+              DeleteOnTermination: true
+              VolumeType: !Ref JenkinsVolumeType
+        NetworkInterfaces:
+          - AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            DeviceIndex: 0
+            Groups:
+              - Fn::ImportValue: !Sub JenkinsSecurityGroup
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo yum update –y
+            sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+            sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+            sudo yum upgrade
+            curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.12/2023-08-16/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+            sudo yum install git -y
+            sudo yum install nodejs -y
+            sudo dnf install docker -y
+            sudo dnf install java-11-amazon-corretto -y
+            sudo yum install jenkins -y
+            sudo systemctl enable jenkins
+            sudo systemctl start jenkins
+            sudo systemctl enable docker
+            sudo systemctl start docker
+            sudo systemctl status jenkins
+            sudo systemctl status docker
+            sudo usermod -a -G docker jenkins
+            sudo systemctl restart jenkins
+
+  JenkinsAutoScailingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub PublicSubnet1a
+        - Fn::ImportValue: !Sub PublicSubnet1b
+        - Fn::ImportValue: !Sub PublicSubnet1c
+      MinSize: 1
+      MaxSize: 3
+      DesiredCapacity: 1
+      TargetGroupARNs:
+        - Fn::ImportValue: !Sub ALBTargetGroup
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: JenkinsLaunchTemplate
+        Version: !GetAtt JenkinsLaunchTemplate.LatestVersionNumber
+
+  # ------------ CloudWatch monitoring ---------------------
+  # --------------------------------------------------------
+  JenkinsScaleUp:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref JenkinsAutoScailingGroup
+      AdjustmentType: ChangeInCapacity
+      Cooldown: 300
+      ScalingAdjustment: 1
+  JenkinsScaleDown:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref JenkinsAutoScailingGroup
+      AdjustmentType: ChangeInCapacity
+      Cooldown: 300
+      ScalingAdjustment: -1
+
+  CloudWatchHighCPUUsageAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: 'WebServerCPUUsageHigh'
+      MetricName: CPU Usage
+      AlarmDescription: 'CPU usage is greater than 80% for 5 minutes'
+      Namespace: 'AWS/EC2'
+      Statistic: 'Average'
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '80'
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - Ref: JenkinsScaleUp
+      Dimensions:
+        - Name: 'AutoScalingGroupName'
+          Value:
+            Ref: JenkinsScaleDown
+
+  CloudWatchLowCPUUsageAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: 'WebServerCPUUsageLow'
+      AlarmDescription: 'CPU usage is less than 20% for 5 minutes'
+      MetricName: CPU Usage
+      Namespace: 'AWS/EC2'
+      Statistic: 'Average'
+      Period: '300'
+      EvaluationPeriods: '1'
+      Threshold: '20'
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - Ref: JenkinsScaleDown
+      Dimensions:
+        - Name: 'AutoScalingGroupName'
+          Value:
+            Ref: JenkinsAutoScailingGroup
