@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: backend-blogs-green
+  name: backend-blogs-green
+spec:
+  ports:
+    - name: "3001"
+      port: 3001
+      targetPort: 3001
+  selector:
+    service: backend-blogs-green
+    version: v1.0.1

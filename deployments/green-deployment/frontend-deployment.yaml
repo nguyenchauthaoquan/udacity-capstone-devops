@@ -2,31 +2,32 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    service: reverse-proxy-blue
-  name: reverse-proxy-blue
+    service: frontend-green
+  name: frontend-green
 spec:
   replicas: 2
   selector:
     matchLabels:
-      service: reverse-proxy-blue
-      version: v1.0.0
+      service: frontend-green
+      version: v1.0.1
   template:
     metadata:
       labels:
-        service: reverse-proxy-blue
-        version: v1.0.0
+        service: frontend-green
+        version: v1.0.1
+        api: external
     spec:
       containers:
-        - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
-          name: reverse-proxy-blue
+        - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:latest
+          name: frontend-green
           imagePullPolicy: Always
+          ports:
+            - containerPort: 80
           resources:
             requests:
               memory: "512Mi"
               cpu: "150m"
             limits:
-              memory: "1024Mi"
+              memory: "2048Mi"
               cpu: "300m"
-          ports:
-            - containerPort: 3001
       restartPolicy: Always

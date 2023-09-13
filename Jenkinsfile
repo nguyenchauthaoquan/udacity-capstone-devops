@@ -101,10 +101,11 @@ pipeline {
 				}
 			}
 		}
-		stage("Pushing Blue deployment images to ECR") {
+		stage("Pushing docker images to ECR") {
 			steps {
 				script {
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+						// Blue deployment
 						sh '''
 							cd backend/blogs
 							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
@@ -126,40 +127,34 @@ pipeline {
 							docker tag reverse-proxy:v1 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
 							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v1
 						'''
-					}
-				}
-			}
-		}
-		stage("Pushing Green deployment images to ECR") {
-			steps {
-				script {
-					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+
+						// Green deployment
 						sh '''
 							cd backend/blogs
 							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
-							docker build -t backend-blogs:v2 .
-							docker tag backend-blogs:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v2
-							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v2
+							docker build -t backend-blogs:latest .
+							docker tag backend-blogs:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
 						'''
 						sh '''
 							cd frontend
 							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
-							docker build -t frontend:v2 .
-							docker tag frontend:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v2
-							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v2
+							docker build -t frontend:latest .
+							docker tag frontend:latest 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:latest
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:latest
 						'''
 						sh '''
 							cd reverse-proxy
 							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
-							docker build -t reverse-proxy:v2 .
-							docker tag reverse-proxy:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v2
-							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v2
+							docker build -t reverse-proxy:latest .
+							docker tag reverse-proxy:latest 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:latest
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:latest
 						'''
 					}
 				}
 			}
 		}
-		stage("Orchestrate docker container") {
+		stage("Orchestrate docker images") {
 			steps {
 				script {
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
@@ -173,6 +168,17 @@ pipeline {
 							kubectl apply -f deployments/blue-deployment/reverse-proxy-service.yaml
 							kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend
 							kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy
+						'''
+						sh '''
+							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+							kubectl apply -f deployments/green-deployment/backend-blogs-deployment.yaml
+							kubectl apply -f deployments/green-deployment/frontend-deployment.yaml
+							kubectl apply -f deployments/green-deployment/reverse-proxy-deployment.yaml
+							kubectl apply -f deployments/green-deployment/backend-blogs-service.yaml
+							kubectl apply -f deployments/green-deployment/frontend-service.yaml
+							kubectl apply -f deployments/green-deployment/reverse-proxy-service.yaml
+							kubectl expose deployment frontend-green --type=LoadBalancer --name=publicfrontend
+							kubectl expose deployment reverse-proxy-green --type=LoadBalancer --name=publicreverseproxy
 						'''
 					}
 				}

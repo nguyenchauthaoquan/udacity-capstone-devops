@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: backend-blogs-green
+  name: backend-blogs-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: backend-blogs-green
+      version: v1.0.1
+  template:
+    metadata:
+      labels:
+        service: backend-blogs-green
+        version: v1.0.1
+    spec:
+      containers:
+        - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
+          name: backend-blogs-green
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "150m"
+            limits:
+              memory: "1024Mi"
+              cpu: "300m"

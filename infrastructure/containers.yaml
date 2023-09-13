@@ -150,6 +150,9 @@ Resources:
           - Fn::ImportValue: !Sub PrivateSubnet1a
           - Fn::ImportValue: !Sub PrivateSubnet1b
           - Fn::ImportValue: !Sub PrivateSubnet1c
+          - Fn::ImportValue: !Sub PublicSubnet1a
+          - Fn::ImportValue: !Sub PublicSubnet1b
+          - Fn::ImportValue: !Sub PublicSubnet1c
 
   CapstoneEKSNodeGroup:
     Type: AWS::EKS::Nodegroup
