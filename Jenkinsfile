@@ -157,29 +157,43 @@ pipeline {
 		stage("Orchestrate docker images") {
 			steps {
 				script {
-					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
-						sh '''
-							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-							kubectl apply -f deployments/blue-deployment/backend-blogs-deployment.yaml
-							kubectl apply -f deployments/blue-deployment/frontend-deployment.yaml
-							kubectl apply -f deployments/blue-deployment/reverse-proxy-deployment.yaml
-							kubectl apply -f deployments/blue-deployment/backend-blogs-service.yaml
-							kubectl apply -f deployments/blue-deployment/frontend-service.yaml
-							kubectl apply -f deployments/blue-deployment/reverse-proxy-service.yaml
-							kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend-blue
-							kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy-blue
-						'''
-						sh '''
-							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-							kubectl apply -f deployments/green-deployment/backend-blogs-deployment.yaml
-							kubectl apply -f deployments/green-deployment/frontend-deployment.yaml
-							kubectl apply -f deployments/green-deployment/reverse-proxy-deployment.yaml
-							kubectl apply -f deployments/green-deployment/backend-blogs-service.yaml
-							kubectl apply -f deployments/green-deployment/frontend-service.yaml
-							kubectl apply -f deployments/green-deployment/reverse-proxy-service.yaml
-							kubectl expose deployment frontend-green --type=LoadBalancer --name=publicfrontend-green
-							kubectl expose deployment reverse-proxy-green --type=LoadBalancer --name=publicreverseproxy-green
-						'''
+					Throwable caughtException = null
+
+					catchError(buildResult: 'SUCCESS', stageResult: 'ABORTED') {
+						try {
+							withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+								sh '''
+									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+									kubectl apply -f deployments/blue-deployment/backend-blogs-deployment.yaml
+									kubectl apply -f deployments/blue-deployment/frontend-deployment.yaml
+									kubectl apply -f deployments/blue-deployment/reverse-proxy-deployment.yaml
+									kubectl apply -f deployments/blue-deployment/backend-blogs-service.yaml
+									kubectl apply -f deployments/blue-deployment/frontend-service.yaml
+									kubectl apply -f deployments/blue-deployment/reverse-proxy-service.yaml
+									kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend-blue
+									kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy-blue
+								'''
+									sh '''
+									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+									kubectl apply -f deployments/green-deployment/backend-blogs-deployment.yaml
+									kubectl apply -f deployments/green-deployment/frontend-deployment.yaml
+									kubectl apply -f deployments/green-deployment/reverse-proxy-deployment.yaml
+									kubectl apply -f deployments/green-deployment/backend-blogs-service.yaml
+									kubectl apply -f deployments/green-deployment/frontend-service.yaml
+									kubectl apply -f deployments/green-deployment/reverse-proxy-service.yaml
+									kubectl expose deployment frontend-green --type=LoadBalancer --name=publicfrontend-green
+									kubectl expose deployment reverse-proxy-green --type=LoadBalancer --name=publicreverseproxy-green
+								'''
+							}
+						} catch (Throwable e) {
+							sh '''
+								kubectl delete all --all
+							'''
+							caughtException = e
+						}
+						if (caughtException) {
+							error caughtException.message
+						}
 					}
 				}
 			}
