@@ -2,24 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    service: frontend-blue
+    service: frontend
   name: frontend-blue
 spec:
   replicas: 2
   selector:
     matchLabels:
-      service: frontend-blue
+      service: frontend
       version: v1.0.0
   template:
     metadata:
       labels:
-        service: frontend-blue
+        service: frontend
         version: v1.0.0
         api: external
     spec:
       containers:
         - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v1
-          name: frontend-blue
+          name: frontend
           imagePullPolicy: Always
           ports:
             - containerPort: 80

@@ -2,13 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    service: reverse-proxy-blue
-  name: reverse-proxy-blue
+    service: reverse-proxy
+  name: reverse-proxy-green
 spec:
   ports:
     - name: "3001"
       port: 3001
       targetPort: 3001
   selector:
-    service: reverse-proxy-blue
-    version: v1.0.0
+    service: reverse-proxy
+    version: v1.0.1
