@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    service: backend-blogs-blue
-  name: backend-blogs-blue
+    service: backend-blogs
+  name: backend-blogs
 spec:
   replicas: 1
   selector:
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v1
-          name: backend-blogs-blue
+          name: backend-blogs
           imagePullPolicy: Always
           resources:
             requests:

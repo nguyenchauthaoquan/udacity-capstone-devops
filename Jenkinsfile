@@ -157,11 +157,11 @@ pipeline {
 		stage("Orchestrate docker images") {
 			steps {
 				script {
-					Throwable caughtException = null
+					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+						Throwable caughtException = null
 
-					catchError(buildResult: 'SUCCESS', stageResult: 'ABORTED') {
-						try {
-							withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+						catchError(buildResult: 'SUCCESS', stageResult: 'ABORTED') {
+							try {
 								sh '''
 									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
 									kubectl apply -f deployments/blue-deployment/backend-blogs-deployment.yaml
@@ -173,7 +173,7 @@ pipeline {
 									kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend-blue
 									kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy-blue
 								'''
-									sh '''
+								sh '''
 									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
 									kubectl apply -f deployments/green-deployment/backend-blogs-deployment.yaml
 									kubectl apply -f deployments/green-deployment/frontend-deployment.yaml
@@ -184,30 +184,31 @@ pipeline {
 									kubectl expose deployment frontend-green --type=LoadBalancer --name=publicfrontend-green
 									kubectl expose deployment reverse-proxy-green --type=LoadBalancer --name=publicreverseproxy-green
 								'''
+							} catch (Throwable e) {
+								sh '''
+									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+									kubectl delete all --all
+								'''
+								caughtException = e
+							} finally {
+								sh '''
+									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+									kubectl get services
+								'''
+								sh '''
+									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+									kubectl get deployments
+								'''
+								sh '''
+									aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+									kubectl get pods
+								'''
 							}
-						} catch (Throwable e) {
-							sh '''
-								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-								kubectl delete all --all
-							'''
-							caughtException = e
-						} finally {
-							sh '''
-								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-								kubectl get services
-							'''
-							sh '''
-								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-								kubectl get deployments
-							'''
-							sh '''
-								aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-								kubectl get pods
-							'''
+							if (caughtException) {
+								error caughtException.message
+							}
 						}
-						if (caughtException) {
-							error caughtException.message
-						}
+
 					}
 				}
 			}

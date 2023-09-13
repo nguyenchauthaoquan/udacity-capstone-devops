@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:latest
-          name: backend-blogs-green
+          name: backend-blogs
           imagePullPolicy: Always
           resources:
             requests:
