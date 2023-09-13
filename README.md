@@ -2,6 +2,8 @@
 
 > In this project, I will implement the blogs api and simple react application and apply all aws that I have learnt throughout the Cloud DevOps Nanodegree program.
 
+Github url: https://github.com/nguyenchauthaoquan/udacity-devops-capstone
+
 ## What have I applied from the previous projects ?
 
 - Project 2: Use the cloudformation yaml to deploy the pre-defined infrastructure
