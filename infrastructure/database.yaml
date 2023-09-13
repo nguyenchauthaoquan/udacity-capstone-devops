@@ -62,3 +62,13 @@ Resources:
         - !GetAZs
           Ref: AWS::Region
       PubliclyAccessible: true
+
+Outputs:
+  RDSEndpoint:
+    Value: !GetAtt AuroraCluster.Endpoint.Address
+    Export:
+      Name: !Sub RDSEndpoint
+  RDSPort:
+    Value: !GetAtt AuroraCluster.Endpoint.Port
+    Export:
+      Name: !Sub RDSPort

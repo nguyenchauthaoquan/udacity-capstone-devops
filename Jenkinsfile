@@ -101,7 +101,7 @@ pipeline {
 				}
 			}
 		}
-		stage("Push to ECR") {
+		stage("Pushing Blue deployment images to ECR") {
 			steps {
 				script {
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
@@ -130,13 +130,66 @@ pipeline {
 				}
 			}
 		}
+		stage("Pushing Green deployment images to ECR") {
+			steps {
+				script {
+					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+						sh '''
+							cd backend/blogs
+							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
+							docker build -t backend-blogs:v2 .
+							docker tag backend-blogs:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v2
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v2
+						'''
+						sh '''
+							cd frontend
+							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
+							docker build -t frontend:v2 .
+							docker tag frontend:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v2
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/frontend:v2
+						'''
+						sh '''
+							cd reverse-proxy
+							aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 622817277005.dkr.ecr.eu-west-2.amazonaws.com
+							docker build -t reverse-proxy:v2 .
+							docker tag reverse-proxy:v2 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v2
+							docker push 622817277005.dkr.ecr.eu-west-2.amazonaws.com/reverse-proxy:v2
+						'''
+					}
+				}
+			}
+		}
+		stage("Enable cloudwatch metrics for kubernetes") {
+			steps {
+				script {
+					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
+						sh '''
+							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
+							kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon\u0002cloudwatch-container-insights/latest/k8s-deployment-manifest\u0002templates/deployment-mode/daemonset/container-insights\u0002monitoring/cwagent/cwagent-serviceaccount.yaml
+							kubectl apply -f deployment/cwagent-configmap.yaml
+							kubectl get pods -n amazon-cloudwatch
+						'''
+					}
+				}
+			}
+		}
 		stage("Orchestrate docker container") {
 			steps {
 				script {
 					withAWS(credentials: 'aws-credentials', region: 'eu-west-2') {
 						sh '''
 							aws eks update-kubeconfig --region eu-west-2 --name capstone-cluster
-							
+							kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon\u0002cloudwatch-container-insights/latest/k8s-deployment-manifest\u0002templates/deployment-mode/daemonset/container-insights\u0002monitoring/cwagent/cwagent-serviceaccount.yaml
+							kubectl apply -f deployment/cwagent-configmap.yaml
+							kubectl get pods -n amazon-cloudwatch
+							kubectl apply -f blue-deployment/backend-blogs-deployment.yaml
+							kubectl apply -f blue-deployment/frontend-deployment.yaml
+							kubectl apply -f blue-deployment/reverse-proxy-deployment.yaml
+							kubectl apply -f blue-deployment/backend-blogs-service.yaml
+							kubectl apply -f blue-deployment/frontend-service.yaml
+							kubectl apply -f blue-deployment/reverse-proxy-service.yaml
+							kubectl expose deployment frontend-blue --type=LoadBalancer --name=publicfrontend
+							kubectl expose deployment reverse-proxy-blue --type=LoadBalancer --name=publicreverseproxy
 						'''
 					}
 				}

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: backend-blogs-blue
+  name: backend-blogs-blue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: backend-blogs-blue
+      version: v1.0.0
+  template:
+    metadata:
+      labels:
+        service: backend-blogs-blue
+        version: v1.0.0
+    spec:
+      containers:
+        - image: 622817277005.dkr.ecr.eu-west-2.amazonaws.com/backend-blogs:v1
+          name: backend-blogs-blue
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "150m"
+            limits:
+              memory: "1024Mi"
+              cpu: "300m"

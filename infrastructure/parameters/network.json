@@ -29,6 +29,6 @@
   },
   {
     "ParameterKey": "JenkinsCidr",
-    "ParameterValue": "42.119.228.52/32"
+    "ParameterValue": "0.0.0.0/0"
   }
 ]
